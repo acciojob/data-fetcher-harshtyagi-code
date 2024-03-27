@@ -1,57 +1,37 @@
-import React, { useState, useEffect } from "react";
-//import Axios from "axios";
+import React, { useEffect, useState } from "react";
 import "./../styles/App.css";
-import 'regenerator-runtime/runtime'
-
-
 
 const App = () => {
-  const [data, setData] = useState([]);
-  const [error, setError] = useState("")
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const func = async () => {
-    try{
-      setLoading(true);
-        const res = await fetch("https://dummyjson.com/products")
-        const data = await res.json();
-        if(data.products.length>=1){
-          setData(data.products)
+  useEffect(() => {
+    fetch("https://dummyjson.com/products")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Network response was not ok");
         }
-        else{
-          setData([])
-        }
-        console.log(data.products.length)
-        console.log(data.products)
-    }
-    catch(error){
-      setError(error)
-        console.log("An error occurred:",error)
-    }
-    finally {
-      setLoading(false);
-    }
-}
-useEffect(()=>{
-  func()
-},[])
+        return res.json();
+      })
+      .then((data) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+        setError("An error occurred: " + error.message);
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <div>
-        {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div>
-          <h1>Data Fetched from API</h1>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
-        </div>
-      )
-        }
-        {error &&
-          <p>{error}</p>
-        }
+      <h1>Data Fetched from API</h1>
+      {loading ? <p>Loading data...</p> : error ? <p>{error}</p> : <pre>{JSON.stringify(data, null, 2)}</pre>}
     </div>
   );
 };
+
 
 export default App;
